@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/VishalVijayan-SoftwareDeveloper/expense-tracker-go-aws/internal/auth"
 	"github.com/VishalVijayan-SoftwareDeveloper/expense-tracker-go-aws/internal/config"
 	"github.com/VishalVijayan-SoftwareDeveloper/expense-tracker-go-aws/internal/database"
 	"github.com/VishalVijayan-SoftwareDeveloper/expense-tracker-go-aws/internal/router"
@@ -20,15 +21,27 @@ func main() {
 
 	defer db.Close()
 
-	log.Println("Database connected")
+	authRepo := auth.NewRepository(db)
 
-	r := router.Setup()
+	authService := auth.NewService(
+		authRepo,
+		cfg,
+	)
 
-	log.Printf("Server started on %s", cfg.AppPort)
+	authHandler := auth.NewHandler(
+		authService,
+	)
 
-	err = r.Run(":" + cfg.AppPort)
+	r := router.Setup(
+		authHandler,
+	)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Printf(
+		"Server started on port %s",
+		cfg.AppPort,
+	)
+
+	log.Fatal(
+		r.Run(":" + cfg.AppPort),
+	)
 }

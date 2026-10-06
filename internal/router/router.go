@@ -1,16 +1,40 @@
 package router
 
 import (
-	"github.com/VishalVijayan-SoftwareDeveloper/expense-tracker-go-aws/internal/health"
+	"github.com/VishalVijayan-SoftwareDeveloper/expense-tracker-go-aws/internal/auth"
 
 	"github.com/gin-gonic/gin"
 )
 
-func Setup() *gin.Engine {
+func Setup(
+	authHandler *auth.Handler,
+) *gin.Engine {
 
 	r := gin.Default()
 
-	r.GET("/health", health.Health)
+	api := r.Group("/api/v1")
+
+	{
+		api.POST(
+			"/auth/register",
+			authHandler.Register,
+		)
+
+		api.POST(
+			"/auth/login",
+			authHandler.Login,
+		)
+	}
+
+	r.GET("/health", func(c *gin.Context) {
+
+		c.JSON(
+			200,
+			gin.H{
+				"status": "UP",
+			},
+		)
+	})
 
 	return r
 }
