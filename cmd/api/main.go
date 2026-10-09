@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/VishalVijayan-SoftwareDeveloper/expense-tracker-go-aws/internal/expense"
+	"github.com/VishalVijayan-SoftwareDeveloper/expense-tracker-go-aws/internal/middleware"
 	"log"
 
 	"github.com/VishalVijayan-SoftwareDeveloper/expense-tracker-go-aws/internal/auth"
@@ -31,9 +33,25 @@ func main() {
 	authHandler := auth.NewHandler(
 		authService,
 	)
+	// Middleware
+	authMiddleware := middleware.NewAuthMiddleware(
+		cfg.JWTSecret,
+	)
+
+	expenseRepo := expense.NewRepository(db)
+
+	expenseService := expense.NewService(
+		expenseRepo,
+	)
+
+	expenseHandler := expense.NewHandler(
+		expenseService,
+	)
 
 	r := router.Setup(
 		authHandler,
+		expenseHandler,
+		authMiddleware,
 	)
 
 	log.Printf(

@@ -1,6 +1,11 @@
+version: '3.9'
+
 services:
+
   postgres:
     image: postgres:16
+
+    restart: always
 
     environment:
       POSTGRES_DB: expense_db
@@ -12,6 +17,29 @@ services:
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: .
+
+    container_name: expense-api
+
+    depends_on:
+      - postgres
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      APP_PORT: 8080
+
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: expense_db
+
+      JWT_SECRET: my-super-secret-key
 
 volumes:
   postgres_data:
